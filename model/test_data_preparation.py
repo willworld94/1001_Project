@@ -23,17 +23,6 @@ def nanmean(x, axis=None):
 
 
 def _prepend_edge(tensor, pad_amt, axis=1):
-    '''
-    This function is intented to add 'reflective' padding to a 4d Tensor across
-        the height and width dimensions
-
-    Parameters
-    ----------
-    tensor: Tensor with rank 4
-    pad_amt: Integer
-    axis: Integer
-        Must be in (1,2)
-    '''
     if axis not in (1, 2):
         raise ValueError("Axis must equal 0 or 1. Axis is set to %i" % axis)
 
@@ -58,17 +47,6 @@ def _prepend_edge(tensor, pad_amt, axis=1):
 
 
 def _append_edge(tensor, pad_amt, axis=1):
-    '''
-    This function is intented to add 'reflective' padding to a 4d Tensor across
-        the height and width dimensions
-
-    Parameters
-    ----------
-    tensor: Tensor with rank 4
-    pad_amt: Integer
-    axis: Integer
-        Must be in (1,2)
-    '''
     if axis not in (1, 2):
         raise ValueError("Axis must equal 0 or 1. Axis is set to %i" % axis)
 
@@ -79,7 +57,7 @@ def _append_edge(tensor, pad_amt, axis=1):
 
     begin = [0, 0, 0, 0]
     end = [-1, -1, -1, -1]
-    begin[axis] = tf.shape(tensor)[axis] - 1  # go to the end
+    begin[axis] = tf.shape(tensor)[axis] - 1
 
     edges = pad_amt * [tf.slice(tensor, begin, end)]
     # edges = pad_amt * [tf.slice(tensor, begin, end) * 0]

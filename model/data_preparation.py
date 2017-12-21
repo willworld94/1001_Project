@@ -50,11 +50,6 @@ class SuperResData:
             yield lr_images[k], hr_images[k]
 
     def make_patches(self, patch_size=None, stride=None):
-        """
-        Args:
-            patch_size: size of low-resolution subimages
-            stride: step length between subimages
-        """
         X_sub = []
         Y_sub = []
         for x, y in self.read():
@@ -75,10 +70,6 @@ class SuperResData:
         return X_sub, Y_sub
 
     def get_images(self):
-        """
-        This method returns two lists of tensorflow constants of low-res and high-res
-                images (input and label)
-        """
         X, Y = [], []
         for x, y in self.read():
             if len(x.shape) != 3:

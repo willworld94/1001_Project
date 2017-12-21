@@ -7,7 +7,6 @@ import cv2
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'srcnn'))
 import srcnn
 
-# model parameters
 flags = tf.flags
 
 flags.DEFINE_string('checkpoint_dir', 'results/64-32-3_9-1-5_128', 'Checkpoint directory.')
@@ -52,8 +51,6 @@ hr = sess.run(model.prediction, feed_dict=feed_dict)[0]
 
 def luminance(img):
     return 0.299 * img[:, :, 0] + 0.587 * img[:, :, 1] + 0.114 * img[:, :, 2]
-# def luminance(img):
-#     return 0.25 * img[:, :, 0] + 0.5 * img[:, :, 1] + 0.25 * img[:, :, 2]
 
 
 def compute_psnr(x1, x2):

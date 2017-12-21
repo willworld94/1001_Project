@@ -44,8 +44,7 @@ class SRCNN:
         self.learning_rate = learning_rate
         self.device = device
         self.global_step = tf.Variable(0, trainable=False)
-        # self.learning_rate = tf.train.exponential_decay(learning_rate, self.global_step,
-        #                                                 100000, 0.96)
+
         self._build_graph()
 
     def _normalize(self):
@@ -77,11 +76,9 @@ class SRCNN:
 
     def _loss(self, predictions):
         with tf.name_scope("loss"):
-            # if training then crop center of y, else, padding was applied
             slice_amt = int((np.sum(self.filter_sizes) - len(self.filter_sizes)) / 2)
             slice_y = self.y_norm[:, slice_amt:-slice_amt, slice_amt:-slice_amt]
             _y = tf.cond(self.is_training, lambda: slice_y, lambda: self.y_norm)
-            # tf.subtract(predictions, _y)
             err = tf.square(predictions - _y)
             err_filled = utils.fill_na(err, 0)
             finite_count = tf.reduce_sum(tf.cast(tf.is_finite(err), tf.float32))
@@ -92,10 +89,8 @@ class SRCNN:
         opt1 = tf.train.AdamOptimizer(self.learning_rate)
         opt2 = tf.train.AdamOptimizer(self.learning_rate * 0.1)
 
-        # compute gradients irrespective of optimizer
         grads = opt1.compute_gradients(self.loss)
 
-        # apply gradients to first n-1 layers
         opt1_grads = [v for v in grads if "hidden_%i" % (len(self.filter_sizes) - 1)
                       not in v[0].op.name]
         opt2_grads = [v for v in grads if "hidden_%i" % (len(self.filter_sizes) - 1)

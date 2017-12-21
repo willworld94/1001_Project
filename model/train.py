@@ -5,7 +5,6 @@ import time
 
 import tensorflow as tf
 import matplotlib
-# matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
@@ -16,10 +15,8 @@ import srcnn
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'datacenter'))
 from base import SuperResData
 
-# model parameters
 flags = tf.app.flags
 
-# model hyperparamters
 flags.DEFINE_string('hidden', '64,32,3', 'Number of units in hidden layer 1.')
 flags.DEFINE_string('kernels', '9,1,5', 'Kernel size of layer 1.')
 flags.DEFINE_integer('depth', 3, 'Number of input channels.')
@@ -43,9 +40,7 @@ def _maybe_make_dir(directory):
 
 
 def train():
-    # checkpoint = "/Users/will/Desktop/DS1001-Intro-to-data-science/projectbestmodel.ckpt"
     with tf.Graph().as_default(), tf.device(FLAGS.device):
-        # train_images, train_labels = SuperResData(imageset='BSD100', upscale_factor=FLAGS.upscale).tf_patches(batch_size=FLAGS.batch_size)
         image_obj = SuperResData(imageset='BSD100', upscale_factor=FLAGS.upscale)
         train_images, train_labels = image_obj.make_patches(patch_size=FLAGS.patch_size, stride=FLAGS.stride)
         data_length = len(train_labels)
@@ -54,7 +49,6 @@ def train():
         train_labels = np.float32(train_labels)
         train_images_tensor = tf.constant(train_images, name='train_images', dtype=tf.float32)
         train_labels_tensor = tf.constant(train_labels, name='train_labels', dtype=tf.float32)
-        # set placeholders, at test time use placeholder
 
         is_training = tf.placeholder_with_default(True, (), name='is_training')
         x_placeholder = tf.placeholder_with_default(tf.zeros(shape=(1, 10, 10, 3), dtype=tf.float32),
@@ -66,27 +60,21 @@ def train():
         x = tf.cond(is_training, lambda: train_images_tensor, lambda: x_placeholder)
         y = tf.cond(is_training, lambda: train_labels_tensor, lambda: y_placeholder)
 
-        # x_interp = tf.image.resize_bicubic(x, [h, w])
         x_interp = tf.minimum(tf.nn.relu(x), 255)
 
-        # build graph
         model = srcnn.SRCNN(x_interp, y, FLAGS.HIDDEN_LAYERS, FLAGS.KERNELS,
                             is_training=is_training, input_depth=FLAGS.depth,
                             output_depth=FLAGS.depth, upscale_factor=FLAGS.upscale,
                             learning_rate=1e-4, device=FLAGS.device)
 
-        # initialize graph
         init_op = tf.group(tf.global_variables_initializer(),
                            tf.local_variables_initializer())
 
-        # Create a session for running operations in the Graph.
         sess = tf.Session()
         saver = tf.train.Saver()
 
-        # Initialize the variables (the trained variables and the # epoch counter).
         sess.run(init_op)
 
-        # Start input enqueue threads.
         batch_loss = 0
         summary_loss = [100000]
         update_loss = 0
@@ -99,7 +87,7 @@ def train():
                 batch_images = train_images[idx * FLAGS.batch_size: (idx + 1) * FLAGS.batch_size]
                 batch_labels = train_labels[idx * FLAGS.batch_size: (idx + 1) * FLAGS.batch_size]
                 _, train_loss = sess.run([model.opt, model.loss], feed_dict={x: batch_images, y: batch_labels})
-                # print("Step: %i, Index: %i, Train Loss: %2.4f" % (epoch, idx, train_loss))
+
                 counter = counter + 1
                 batch_loss += train_loss
                 update_loss += train_loss
